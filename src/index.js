@@ -19,6 +19,8 @@ app.get('/publicaciones', function (req, res) {
 });
 
 app.post('/publicacion', function (req, res) {
+    console.log(req.headers);
+    console.log(req.query);
     publicaciones.push(req.body);
     res.json(publicaciones);
 });
