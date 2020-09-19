@@ -1,41 +1,58 @@
-let posts = [
-    {
-        "id": "100",
-        "autor": "Lucho",
-        "mensaje": "mensaje",
-        "fecha": "2020-09-17"
+const Model = require("./model");
+
+async function getPosts() {
+    // return posts;
+    try {
+        const res = await Model.find({});
+        return res;
+    } catch (e) {
+        console.log(e);
     }
-];
-
-function getPosts() {
-    return posts;
 }
 
-function getPost(postID) {
-    let postSeleccionado = posts.find(function(post){
-        return post.id == postID;
-    });
-    return postSeleccionado;
+async function getPost(postID) {
+    try {
+        const res = await Model.find({ id: postID });
+        return res;
+    } catch (e) {
+        console.log(e);
+    }
 }
 
-function addPost(post) {
-    posts.push(post);
+async function addPost(post) {
+    const postNuevo = new Model(post);
+    try{
+        const res = await postNuevo.save();
+        return res;
+    } catch (e) {
+        console.log(e);
+    }
 }
 
-function editPost(postID, propiedad, valorNuevo) {
-    posts = posts.filter(function(post){
-        if (post.id == postID) {
-            post[propiedad] = valorNuevo;
-        }
-        return post;
-    })
 
+async function editPost(postID, propiedad, valorNuevo) {
+    try {
+        let nuevaInfo = {};
+        nuevaInfo[propiedad] = valorNuevo;
+        const res = await Model.updateOne(
+            {
+                id: postID
+            },
+            nuevaInfo
+        );
+        return res;
+    } catch (e) {
+        console.log(e);
+    }
 }
 
-function removePost(postID) {
-    posts = posts.filter(function(post){
-        return post.id != postID;
-    })
+async function removePost(postID) {
+    try {
+        const res = await Model.deleteOne({ autor: 'Cata' });
+        return res.deletedCount;
+    } catch (e) {
+        console.log(e);
+    }
 }
 
 module.exports = {

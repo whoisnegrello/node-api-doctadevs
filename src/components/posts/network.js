@@ -33,7 +33,7 @@ router.post('/', function (req, res) {
         });
 });
 
-router.put('/:postID', function (req, res) {
+router.patch('/:postID', function (req, res) {
     controller.editPost(req.params.postID, req.body.propiedad, req.body.valor)
         .then((fullMessage) => {
             response.success(req, res, fullMessage, 201);
