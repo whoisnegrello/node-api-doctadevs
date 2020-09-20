@@ -1,58 +1,69 @@
 const Model = require("./model");
 
-async function getPosts() {
-    // return posts;
-    try {
-        const res = await Model.find({});
-        return res;
-    } catch (e) {
-        console.log(e);
-    }
+function getPosts() {
+    // try {
+    //     const res = await Model.find({});
+    //     return res;
+    // } catch (e) {
+    //     console.log(e);
+    // }
+    return Model.find({});
 }
 
-async function getPost(postID) {
-    try {
-        const res = await Model.find({ id: postID });
-        return res;
-    } catch (e) {
-        console.log(e);
-    }
+function getPost(postID) {
+    // try {
+    //     const res = await Model.find({ id: postID });
+    //     return res;
+    // } catch (e) {
+    //     console.log(e);
+    // }
+    return Model.find({ id: postID });
 }
 
-async function addPost(post) {
+function addPost(post) {
+    // try{
+    //     const res = await postNuevo.save();
+    //     return res;
+    // } catch (e) {
+    //     console.log(e);
+    // }
     const postNuevo = new Model(post);
-    try{
-        const res = await postNuevo.save();
-        return res;
-    } catch (e) {
-        console.log(e);
-    }
+    return postNuevo.save();
 }
 
 
-async function editPost(postID, propiedad, valorNuevo) {
-    try {
-        let nuevaInfo = {};
-        nuevaInfo[propiedad] = valorNuevo;
-        const res = await Model.updateOne(
-            {
-                id: postID
-            },
-            nuevaInfo
-        );
-        return res;
-    } catch (e) {
-        console.log(e);
-    }
+function editPost(postID, propiedad, valorNuevo) {
+    // try {
+    //     let nuevaInfo = {};
+    //     nuevaInfo[propiedad] = valorNuevo;
+    //     const res = await Model.updateOne(
+    //         {
+    //             id: postID
+    //         },
+    //         nuevaInfo
+    //     );
+    //     return res;
+    // } catch (e) {
+    //     console.log(e);
+    // }
+    let nuevaInfo = {};
+    nuevaInfo[propiedad] = valorNuevo;
+    return Model.updateOne(
+        {
+            id: postID
+        },
+        nuevaInfo
+    );
 }
 
-async function removePost(postID) {
-    try {
-        const res = await Model.deleteOne({ autor: 'Cata' });
-        return res.deletedCount;
-    } catch (e) {
-        console.log(e);
-    }
+function removePost(postID) {
+    // try {
+    //     const res = await Model.deleteOne({ autor: 'Cata' });
+    //     return res.deletedCount;
+    // } catch (e) {
+    //     console.log(e);
+    // }
+    return Model.deleteOne({ id: postID });
 }
 
 module.exports = {
