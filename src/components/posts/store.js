@@ -1,4 +1,5 @@
 const Model = require("./model");
+const User = require("../users/model");
 
 function listPosts() {
     return Model.find({});
@@ -9,8 +10,30 @@ function getPost(postID) {
 }
 
 function addPost(post) {
-    const postNuevo = new Model(post);
-    return postNuevo.save();
+    User
+    .findOne({ id: post.autor })
+    .populate('users')
+    .exec((err, populated) => {
+        if (err) {
+            reject(err);
+            return false;
+        }
+        const postNuevo = new Model({
+            id: post.id,
+            mensaje: post.mensaje,
+            autor: populated
+        });
+        postNuevo.save().then(function(res){
+            return User.updateOne(
+                {
+                    id: res.autor.id
+                },
+                {
+                    $push: { posts: [res._id] }
+                }
+            );
+        })
+    });
 }
 
 

@@ -5,8 +5,10 @@ const User = mongoose.model(
     {
         id: Number,
         usuario: String,
-        contraseña: String,
-        email: String
+        posts: [{
+            type: mongoose.Schema.ObjectId,
+            ref: 'Post',
+        }]
     }
 );
 

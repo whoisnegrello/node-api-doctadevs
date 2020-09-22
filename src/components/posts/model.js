@@ -4,9 +4,11 @@ const Post = mongoose.model(
     'Post',
     {
         id: Number,
-        autor: String,
-        mensaje: String,
-        fecha: Date
+        autor: {
+            type: mongoose.Schema.ObjectId,
+            ref: 'User',
+        },
+        mensaje: String
     }
 );
 
