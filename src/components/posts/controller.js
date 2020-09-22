@@ -1,13 +1,17 @@
 const store = require("./store");
 
-function getPosts() {
+function listPosts() {
     return new Promise((resolve, reject) =>{
-        resolve(store.getPosts());
+        resolve(store.listPosts());
     });
 }
 
 function getPost(postID) {
     return new Promise((resolve, reject) =>{
+        if (!postID) {
+            reject("No ingresaste ningún ID de post.")
+        }
+
         resolve(store.getPost(postID));
     });
 }
@@ -25,7 +29,7 @@ function addPost(post) {
 function editPost(postID, propiedad, valorNuevo) {
     return new Promise((resolve, reject) =>{
         if (!postID || !propiedad || !valorNuevo ) {
-            reject("No ingresaste algún elemento.")
+            reject("No ingresaste algún elemento requerido.")
         }
 
         resolve(store.editPost(postID, propiedad, valorNuevo));
@@ -43,7 +47,7 @@ function removePost(postID) {
 }
 
 module.exports = {
-    getPosts,
+    listPosts,
     getPost,
     addPost,
     editPost,
