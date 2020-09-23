@@ -14,16 +14,17 @@ function addPost(post) {
     .findOne({ id: post.autor })
     .populate('users')
     .exec((err, populated) => {
-        if (err) {
-            reject(err);
-            return false;
+        if (err || populated == null) {
+            // console.log(err, populated);
+            throw new Error("No existe el usuario o algo salió mal.")
         }
         const postNuevo = new Model({
             id: post.id,
             mensaje: post.mensaje,
             autor: populated
         });
-        postNuevo.save().then(function(res){
+        postNuevo.save()
+        .then(function(res){
             return User.updateOne(
                 {
                     id: res.autor.id
