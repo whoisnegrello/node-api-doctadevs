@@ -8,7 +8,8 @@ const User = mongoose.model(
         posts: [{
             type: mongoose.Schema.ObjectId,
             ref: 'Post',
-        }]
+        }],
+        password: String,
     }
 );
 
