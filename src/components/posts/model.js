@@ -8,7 +8,9 @@ const Post = mongoose.model(
             type: mongoose.Schema.ObjectId,
             ref: 'User',
         },
-        mensaje: String
+        mensaje: String,
+        fecha: Date,
+        likes: Number,
     }
 );
 
