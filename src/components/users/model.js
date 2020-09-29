@@ -4,7 +4,8 @@ const User = mongoose.model(
     'User',
     {
         id: Number,
-        usuario: String,
+        name: String,
+        username: String,
         posts: [{
             type: mongoose.Schema.ObjectId,
             ref: 'Post',
