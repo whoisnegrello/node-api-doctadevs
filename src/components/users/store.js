@@ -24,27 +24,29 @@ function addUser(user) {
 
             user.password = hash;
             const userNuevo = new Model(user);
-            userNuevo.save(function(error) {
-                if (error) {
-                    console.error(`[error] Error para acceder a la DB: ${error.message}.`);
-                    return reject("Error al guardar los datos del usuario.");
-                }
 
+            userNuevo.save()
+            .then(function(res){
                 let userAuth = {
                     username: user.username,
                     password: hash
                 };
                 const newAuth = new Auth(userAuth);
-                newAuth.save(function (error) {
-                    if (error) {
-                        removeUser(user.id);
-                        console.error(`[error] Error para acceder a la DB: ${error.message}.`);
-                        return reject("Error al guardar los datos del usuario.");
-                    }
+                newAuth.save()
+                .then(function(res) {
+                    console.log("[success] Se creó el usuario con éxito.");
+                    return resolve(res);
+                })
+                .catch(function(error){
+                    removeUser(user.id);
+                    console.error(`[error] Error para acceder a la DB: ${error.message}.`);
+                    return reject("Error al guardar los datos del usuario.");
                 });
-            });
-            console.log("[success] Se creó el usuario con éxito.");
-            return resolve("Se creó el usuario con éxito");
+            })
+            .catch(function(error) {
+                console.error(`[error] Error para acceder a la DB: ${error.message}.`);
+                return reject("Error al guardar los datos del usuario.");
+            })
         });
     });
 }
