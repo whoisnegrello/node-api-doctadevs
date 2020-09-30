@@ -6,11 +6,12 @@ const routes = require("./network/routes");
 const dbConnect = require("./db");
 
 const app = express();
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
-app.use(cors());
-
 dbConnect();
+
+app.use(cors());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+
 routes(app);
 
 app.listen(config.server.port, () => {
