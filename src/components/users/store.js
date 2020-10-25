@@ -1,82 +1,119 @@
+const { Promise } = require("mongoose");
 const bcrypt = require("bcrypt");
 const Model = require("./model");
+const Post = require("../posts/model");
 const Auth = require("../auth/model");
+const { err } = require('../../utils');
 
 function listUsers() {
     return new Promise(function(resolve, reject){
-        resolve(Model.find({}));
+        Model.find({})
+        .then(res => resolve(res))
+        .catch(error => {
+            throw reject(err("[data error]", error.message, error.statusCode))
+        })
     });
 }
 
-function getUser(userID) {
+function getUser(username) {
     return new Promise(function(resolve, reject){
-        resolve(Model.findOne({ id: userID }));
+        Model.findOne({ username: username })
+        .then(res => {
+            if (res !== null) {
+                resolve(res);
+            } else {
+                throw reject(err("[data error]", "Este usuario no existe", 404));
+            }
+        })
+        .catch(e => resolve(e))
     });
 }
 
 function addUser(user) {
-    return new Promise(function(resolve, reject){
-        bcrypt.hash(user.password, 10, function(error, hash) {
-            if (error) {
-                console.error(`[error] Error para crear el hash: ${error.message}.`);
-                return reject("Hubo un problema para crear el usuario.");
-            }
+    return new Promise(async function(resolve, reject){
+        checkFirstUser(user)
+        .then(res => {
+            user = res;
+            Model.findOne({ username: user.username })
+            .then(res => {
+                if (res !== null) return reject(err("[data error]", "Este username ya existe", 403));
 
-            user.password = hash;
-            const userNuevo = new Model(user);
+                bcrypt.hash(user.password, 10)
+                .then(hash => {
+                    user.password = hash;
+                    const userNuevo = new Model(user);
 
-            userNuevo.save()
-            .then(function(res){
-                let userAuth = {
-                    username: user.username,
-                    password: hash
-                };
-                const newAuth = new Auth(userAuth);
-                newAuth.save()
-                .then(function(res) {
-                    console.log("[success] Se creó el usuario con éxito.");
-                    return resolve(res);
+                    userNuevo.save()
+                    .then(res => {
+                        let userAuth = {
+                            username: user.username,
+                            password: hash,
+                            role: user.role,
+                        };
+                        const newAuth = new Auth(userAuth);
+                        return newAuth.save()
+                    })
+                    .then(res => resolve(res))
+                    .catch(error => {
+                        throw reject(err("[data error]", "Error al guardar los datos del usuario", 500))
+                    })
                 })
-                .catch(function(error){
-                    removeUser(user.id);
-                    console.error(`[error] Error para acceder a la DB: ${error.message}.`);
-                    return reject("Error al guardar los datos del usuario.");
-                });
+                .catch(error => {
+                    throw reject(err("[hash error]", error.message, 500))
+                })
             })
-            .catch(function(error) {
-                console.error(`[error] Error para acceder a la DB: ${error.message}.`);
-                return reject("Error al guardar los datos del usuario.");
-            })
-        });
+        })
     });
 }
 
-function editUser(userID, propiedad, valorNuevo) {
+function editUser(username, propiedad, valorNuevo) {
     let nuevoUsuario = {};
     nuevoUsuario[propiedad] = valorNuevo;
     return new Promise(function(resolve, reject){
         let nuevaInfo = {};
         nuevaInfo[propiedad] = valorNuevo;
-        return Model.updateOne({id: userID}, nuevaInfo, function(error, writeOpResult){
-            if (error) {
-                console.error(`[error] Error para acceder a la DB: ${error.message}.`);
-                return reject("Hubo un problema para actualizar el usuario.");
+
+        Model.updateOne({username: username}, nuevaInfo)
+        .then(writeOpResult => {
+            if (writeOpResult.nModified === 0) {
+                throw reject(err("[data error]", "Hubo un problema para actualizar el usuario", 500));
+            } else {
+                return resolve("Se actualizaron los datos con éxito")
             }
-            console.log(`[success] Se actualizaron los datos con éxito: ${writeOpResult}.`);
-            return resolve("Se actualizaron los datos con éxito");
-        });
+        })
+        .catch(error => reject(err("[data error]", "Hubo un problema para actualizar el usuario", 500)))
     });
 }
 
-function removeUser(userID) {
+function removeUser(username) {
     return new Promise(function(resolve, reject){
-        Model.deleteOne({ id: userID }, function (error) {
-            if(error) {
-                console.error(`[error] Error para acceder a la DB: ${error.message}.`);
-                return reject("Hubo un problema para eliminar el usuario.");
+        Model.findOne({ username: username })
+        .then(res => {
+            if (res.length < 1) {
+                return reject(err("[data error]", "Este usuario no existe", 500))
             }
-        });
-        return resolve("Usuario eliminado con éxito.");
+            return res;
+        })
+        .then(res => Post.deleteMany({autor: res._id}))
+        .then(res => Model.deleteOne({ username: username }))
+        .then(res => Auth.deleteOne({ username: username }))
+        .then(res => resolve("Usuario y contenidos eliminados con éxito."))
+        .catch(error => reject(err("[data error]", "Hubo un problema para eliminar el usuario", 500)))
+    });
+}
+
+function checkFirstUser(user) {
+    return new Promise(function(resolve, reject){
+        Model.find({})
+        .then(res => {
+            if(res.length === 0){
+                user.role = 'admin';
+            } else {
+                user.role = 'subscriber';
+            }
+            return resolve(user);
+        })
+        .catch(error => reject(err("[data error]", error.message, error.statusCode)))
     });
 }
 
