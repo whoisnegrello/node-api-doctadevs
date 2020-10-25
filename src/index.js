@@ -4,6 +4,7 @@ const cors = require("cors");
 const config = require("./config");
 const routes = require("./network/routes");
 const dbConnect = require("./db");
+const errors = require('./network/errors');
 
 const app = express();
 dbConnect();
@@ -14,6 +15,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 routes(app);
 
+app.use(errors);
+
 app.listen(config.server.port, () => {
-    console.log(`El servidor está correindo en ${config.server.host}:${config.server.port}`)
+    console.log(`El servidor está corriendo en ${config.server.host}:${config.server.port}`)
 });

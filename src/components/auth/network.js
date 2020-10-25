@@ -4,14 +4,20 @@ const response = require('../../network/response');
 
 const router = express.Router();
 
-router.post('/', function(req, res) {
+router.post('/', login);
+
+function login(req, res) {
+    if (!req.body.username || !req.body.password) {
+        return response.error(req, res, "La información enviada no es válida", 500);
+    }
+
     controller.login(req.body.username, req.body.password)
-    .then(messageList => {
-        return response.success(req, res, messageList, 200);
+    .then(responseBody => {
+        return response.success(req, res, responseBody, 200);
     })
-    .catch(e => {
-        return response.error(req, res, 'Informacion invalida', 400, 'Error en el controlaor');
+    .catch(error => {
+        return response.error(req, res, error.message, error.statusCode);
     });
-});
+}
 
 module.exports = router;

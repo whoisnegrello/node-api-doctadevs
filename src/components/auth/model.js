@@ -6,6 +6,7 @@ const Auth = mongoose.model(
         id: String,
         username: String,
         password: String,
+        role: String,
     }
 );
 

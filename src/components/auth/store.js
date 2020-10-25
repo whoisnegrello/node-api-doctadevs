@@ -2,42 +2,29 @@ const bcrypt = require("bcrypt");
 const { Promise } = require("mongoose");
 const auth = require("../../secure");
 const Model = require("./model");
+const { err } = require('../../utils');
 
-function login(username, pass) {
-    return new Promise(function(resolve, reject){
-        if (!username || !pass) {
-            console.error("[error] Faltan datos para hacer la autenticación.");
-            return reject("Faltan datos");
-        };
+async function login(username, pass) {
+    try {
+        const user = await Model.findOne({username : username});
+        if (user === null){
+            throw err("[login error]", "Los datos de acceso no son válidos", 403);
+        }
 
-        Model
-        .findOne({username : username})
-        .exec(function(error, res){
-            if (error){
-                console.error(`[error] Error para acceder a la DB: ${error.message}.`);
-                return reject("Los datos de acceso no son válidos.");
-            }
+        const checkPass = await bcrypt.compare(pass, user.password)
+        if (!checkPass) {
+            throw err("[login error]", "Los datos de acceso no son válidos", 403);
+        }
 
-            if (res === null){
-                console.error("[error] La DB no arrojó ningún resultado.");
-                return reject("Los datos de acceso no son válidos.");
-            }
-            bcrypt.compare(pass, res.password, function(error, result) {
-                if (error) {
-                    console.error(`[error] La verificación arrojó un error: ${error.message}.`);
-                    return reject(error);
-                }
+        const token = await auth.sign({ user: user.username, role: user.role });
+        if (!token) {
+            throw err("[login error]", "Los datos de acceso no son válidos", 403);
+        }
 
-                if (!result) {
-                    console.error("[error] El password no pasó la verificación.");
-                    return reject("Los datos de acceso no son válidos.");
-                }
-
-                const token = auth.sign({ sub: res.id });
-                return resolve({token});
-            });
-        });
-    });
+        return { token };
+    } catch (error) {
+        throw err("[login error]", error.message, error.statusCode);
+    }
 }
 
 module.exports = {
