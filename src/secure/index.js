@@ -1,13 +1,10 @@
 const jwt = require('jsonwebtoken');
 const config = require('../config');
+const { err } = require('../utils');
+const User = require('../components/users/controller');
 
 const check = {
     public: function (req) {
-        try {
-            decodeHeader(req);
-        } catch(e) {
-            console.log('[auth] Public request with invalid JWT', e);
-        }
         return true;
     },
     user: function (req, owner) {
@@ -16,41 +13,55 @@ const check = {
     own: function (req, owner) {
         const decoded = decodeHeader(req);
 
-        if (decoded.sub !== owner) {
-            throw new Error('Not allowed');
+        if (decoded.user !== owner) {
+            throw err("[verify error]", 'No tenés permiso para acceder a esta ruta.', 403);
         }
     },
-    admin: function (req) {
-        const decoded = decodeHeader(req);
+    admin: async function (req) {
+        try {
+            const decoded = await decodeHeader(req);
 
-        if (decoded.role !== 'admin') {
-            throw new Error('Not allowed');
+            if (decoded.role !== 'admin') {
+                throw err("[verify error]", 'No tenés permiso para acceder a esta ruta.', 403);
+            }
+        } catch (error) {
+            throw err("[verify error]", 'No tenés permiso para acceder a esta ruta.', 403);
         }
     },
 }
 
 function sign(data) {
-    return jwt.sign(data, config.jwt.secret);
-}
-
-function verify(token) {
-    return jwt.verify(token, config.jwt.secret);
+    return jwt.sign(data, config.jwt.secret, { expiresIn: 3600 });
 }
 
 function decodeHeader(req) {
     const authorization = req.headers.authorization || null;
-    const token = getToken(authorization);
-    const decoded = verify(token);
-    req.user = decoded;
+    try {
+        const token = getToken(authorization);
+        const decoded = verify(token);
+        req.user = decoded;
 
-    return decoded;
+        return User.getUser(decoded.user);
+    } catch (error) {
+        throw err(error.description, error.message, error.statusCode);
+    }
+}
+
+function verify(token) {
+    try {
+        return jwt.verify(token, config.jwt.secret);
+    } catch(error) {
+        throw err("[verify error]", error.message, 403);
+    }
 }
 
 function getToken(header) {
     if (!header) {
-        throw new Error('Empty Authorization header');
-    } else if (header.indexOf('Bearer') === -1) {
-        throw new Error('Invalid Authorization header: "Bearer" not found');
+        throw err("[authorization error]", "El header Authorization está vacío", 404);
+    }
+
+    if (header.indexOf('Bearer') === -1) {
+        throw err("[authorization error]", "El header Authorization no contiene 'Bearer'", 404);
     }
 
     return header.split(' ')[1] || null;
