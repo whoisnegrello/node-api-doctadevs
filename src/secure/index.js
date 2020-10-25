@@ -17,14 +17,10 @@ const check = {
             throw err("[verify error]", 'No tenés permiso para acceder a esta ruta.', 403);
         }
     },
-    admin: async function (req) {
-        try {
-            const decoded = await decodeHeader(req);
+    admin: function (req) {
+        const decoded = decodeHeader(req);
 
-            if (decoded.role !== 'admin') {
-                throw err("[verify error]", 'No tenés permiso para acceder a esta ruta.', 403);
-            }
-        } catch (error) {
+        if (decoded.role !== 'admin') {
             throw err("[verify error]", 'No tenés permiso para acceder a esta ruta.', 403);
         }
     },
@@ -32,27 +28,6 @@ const check = {
 
 function sign(data) {
     return jwt.sign(data, config.jwt.secret, { expiresIn: 3600 });
-}
-
-function decodeHeader(req) {
-    const authorization = req.headers.authorization || null;
-    try {
-        const token = getToken(authorization);
-        const decoded = verify(token);
-        req.user = decoded;
-
-        return User.getUser(decoded.user);
-    } catch (error) {
-        throw err(error.description, error.message, error.statusCode);
-    }
-}
-
-function verify(token) {
-    try {
-        return jwt.verify(token, config.jwt.secret);
-    } catch(error) {
-        throw err("[verify error]", error.message, 403);
-    }
 }
 
 function getToken(header) {
@@ -65,6 +40,19 @@ function getToken(header) {
     }
 
     return header.split(' ')[1] || null;
+}
+
+function verify(token) {
+    return jwt.verify(token, config.jwt.secret);
+}
+
+function decodeHeader(req) {
+    const authorization = req.headers.authorization || null;
+    const token = getToken(authorization);
+    const decoded = verify(token);
+    req.user = decoded;
+
+    return decoded;
 }
 
 module.exports = {
