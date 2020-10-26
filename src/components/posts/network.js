@@ -1,56 +1,62 @@
 const express = require('express');
 const controller = require('./controller');
 const response = require('../../network/response');
+const auth = require('./auth.middleware');
 
 const router = express.Router();
 
-router.get('/', function (req, res) {
+router.get('/', auth('list'), list);
+router.get('/:postID', auth('get'), get);
+router.post('/', auth('add'), add);
+router.patch('/:postID', auth('update', { owner: 'autor' }), update);
+router.delete('/:postID', auth('remove', { owner: 'autor' }), remove);
+
+function list(req, res, next) {
     controller.listPosts()
         .then((messageList) => {
             response.success(req, res, messageList, 200);
         })
-        .catch(e => {
-            response.error(req, res, 'Unexpected Error', 500, e);
-        })
-});
+        .catch(next)
+}
 
-router.get('/:postID', function (req, res) {
+function get(req, res, next) {
     controller.getPost(req.params.postID)
         .then((messageList) => {
             response.success(req, res, messageList, 200);
         })
-        .catch(e => {
-            response.error(req, res, 'Unexpected Error', 500, e);
-        })
-});
-router.post('/', function (req, res) {
+        .catch(next)
+}
+function add(req, res, next) {
+    if(
+        Object.keys(req.body).length === 0 && req.body.constructor === Object ||
+        (!req.body.mensaje || !req.body.autor)
+    ){
+        return response.error(req, res, "La información enviada no es válida", 500);
+    }
     controller.addPost(req.body)
         .then((fullMessage) => {
             response.success(req, res, fullMessage, 201);
         })
-        .catch(e => {
-            response.error(req, res, 'Informacion invalida', 400, 'Error en el controlaor');
-        });
-});
+        .catch(next);
+}
 
-router.patch('/:postID', function (req, res) {
+function update(req, res, next) {
+    if(!req.body.propiedad || !req.body.valor){
+        return response.error(req, res, "La información enviada no es válida", 500);
+    }
     controller.editPost(req.params.postID, req.body.propiedad, req.body.valor)
         .then((fullMessage) => {
             response.success(req, res, fullMessage, 201);
         })
-        .catch(e => {
-            response.error(req, res, 'Informacion invalida', 400, 'Error en el controlaor');
-        });
-});
+        .catch(next);
+}
 
-router.delete('/:postID', function (req, res) {
+function remove(req, res, next) {
     controller.removePost(req.params.postID)
         .then((fullMessage) => {
             response.success(req, res, fullMessage, 201);
         })
-        .catch(e => {
-            response.error(req, res, 'Informacion invalida', 400, 'Error en el controlaor');
-        });
-});
+        .catch(next);
+}
 
 module.exports = router;
