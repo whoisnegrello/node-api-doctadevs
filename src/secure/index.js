@@ -7,7 +7,7 @@ const check = {
     public: function (req) {
         return true;
     },
-    user: function (req, owner) {
+    user: function (req) {
         decodeHeader(req);
     },
     own: function (req, owner) {
