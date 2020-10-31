@@ -27,7 +27,7 @@ const check = {
 }
 
 function sign(data) {
-    return jwt.sign(data, config.jwt.secret, { expiresIn: 3600 });
+    return jwt.sign(data, config.jwt.secret);
 }
 
 function getToken(header) {
