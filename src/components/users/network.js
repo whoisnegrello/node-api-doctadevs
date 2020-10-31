@@ -7,6 +7,7 @@ const router = express.Router();
 
 router.get('/', auth('list'), list);
 router.get('/:username', auth('get', { owner: 'username' }), get);
+router.get('/:username/posts', auth('listUserPosts'), listUserPosts);
 router.post('/', auth('add'), add);
 router.patch('/:username', auth('update', { owner: 'username' }), update);
 router.delete('/:username', auth('remove', { owner: 'username' }), remove);
@@ -25,6 +26,14 @@ function get (req, res, next) {
             response.success(req, res, messageList, 200);
         })
         .catch(next)
+}
+
+function listUserPosts(req, res, next) {
+    controller.listUserPosts(req.params.username)
+        .then((fullMessage) => {
+            response.success(req, res, fullMessage, 201);
+        })
+        .catch(next);
 }
 
 function add (req, res, next) {

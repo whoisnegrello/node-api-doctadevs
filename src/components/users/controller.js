@@ -21,10 +21,15 @@ function removeUser(userID){
     return store.removeUser(userID);
 }
 
+function listUserPosts(username) {
+    return store.listUserPosts(username);
+}
+
 module.exports = {
     listUsers,
     getUser,
     addUser,
     editUser,
     removeUser,
+    listUserPosts,
 };

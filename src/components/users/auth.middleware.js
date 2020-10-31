@@ -13,6 +13,7 @@ function checkAuth(action, options) {
                     auth.check.admin(req)
                     break;
                 case 'add':
+                case 'listUserPosts':
                     auth.check.public(req);
                     break;
                 case 'get':

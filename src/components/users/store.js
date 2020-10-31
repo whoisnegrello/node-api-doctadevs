@@ -117,10 +117,22 @@ function checkFirstUser(user) {
     });
 }
 
+function listUserPosts(username) {
+    return new Promise(function(resolve, reject){
+        Model.findOne({ username: username })
+        .then(res => {
+            return Post.find({autor: res._id})
+        })
+        .then(res => resolve(res))
+        .catch(error => reject(err("[data error]", error.message, error.statusCode)))
+    });
+}
+
 module.exports = {
     listUsers,
     getUser,
     addUser,
     editUser,
     removeUser,
+    listUserPosts,
 };
