@@ -9,7 +9,10 @@ const Post = mongoose.model(
         },
         mensaje: String,
         fecha: Date,
-        likes: Number,
+        likes: [{
+            type: mongoose.Schema.ObjectId,
+            ref: 'User',
+        }],
     }
 );
 
