@@ -12,6 +12,10 @@ function addPost(post) {
     return store.addPost(post);
 }
 
+function likePost(post, username) {
+    return store.likePost(post, username);
+}
+
 function editPost(postID, propiedad, valorNuevo) {
     return store.editPost(postID, propiedad, valorNuevo);
 }
@@ -26,4 +30,5 @@ module.exports = {
     addPost,
     editPost,
     removePost,
+    likePost,
 };

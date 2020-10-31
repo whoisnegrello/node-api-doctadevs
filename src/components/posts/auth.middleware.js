@@ -14,6 +14,7 @@ function checkAuth(action, options) {
                     auth.check.public(req)
                     break;
                 case 'add':
+                case 'like':
                     auth.check.user(req)
                     break;
                 case 'update':

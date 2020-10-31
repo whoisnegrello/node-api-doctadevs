@@ -38,7 +38,7 @@ function addPost(post) {
                 autor: populated,
                 mensaje: post.mensaje,
                 fecha: Date.now(),
-                likes: 0
+                likes: []
             });
 
             postNuevo.save()
@@ -49,6 +49,38 @@ function addPost(post) {
     });
 }
 
+function likePost(postID, username) {
+    return new Promise(function(resolve, reject){
+        Model.findOne({ _id: postID })
+        .then(postObject => {
+            if (postObject === null) return reject(err("[data error]", "Este post no existe", 404));
+
+            User.findOne({ username: username })
+            .then(recoverUser => {
+                if (recoverUser === null) return reject(err("[data error]", "Este usuario no existe", 404));
+                const posLike = postObject.likes.findIndex(like => like.toString() == recoverUser._id.toString());
+
+                let message;
+                if (posLike === -1) {
+                    postObject.likes.push(recoverUser._id)
+                    message = "Le diste like al post";
+                } else {
+                    postObject.likes.splice(posLike, 1);
+                    message = "Retiraste tu like del post";
+                }
+
+                Model.updateOne({ _id: postID }, postObject)
+                .then(writeOpResult => {
+                    if (writeOpResult.nModified === 0) reject(err("[data error]", "No se pudo dar like", 404));
+                    return resolve(message);
+                })
+                .catch(error => reject(err("[data error]", error.message, error.statusCode)))
+            })
+            .catch(error => reject(err("[data error]", error.message, error.statusCode)))
+        })
+        .catch(error => reject(err("[data error]", error.message, error.statusCode)));
+    });
+}
 
 function editPost(postID, propiedad, valorNuevo) {
     return new Promise(function(resolve, reject){
@@ -77,4 +109,5 @@ module.exports = {
     addPost,
     editPost,
     removePost,
+    likePost,
 };

@@ -8,6 +8,7 @@ const router = express.Router();
 router.get('/', auth('list'), list);
 router.get('/:postID', auth('get'), get);
 router.post('/', auth('add'), add);
+router.post('/:postID/like', auth('like'), like);
 router.patch('/:postID', auth('update', { owner: 'autor' }), update);
 router.delete('/:postID', auth('remove', { owner: 'autor' }), remove);
 
@@ -38,6 +39,14 @@ function add(req, res, next) {
             response.success(req, res, fullMessage, 201);
         })
         .catch(next);
+}
+
+function like(req, res, next) {
+    controller.likePost(req.params.postID, req.user.user)
+        .then((messageList) => {
+            response.success(req, res, messageList, 200);
+        })
+        .catch(next)
 }
 
 function update(req, res, next) {
