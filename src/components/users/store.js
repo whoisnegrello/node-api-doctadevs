@@ -122,9 +122,12 @@ function listUserPosts(username) {
         Model.findOne({ username: username })
         .then(res => {
             if (res === null) return reject(err("[data error]", "Este username no existe", 403));
-            return Post.find({autor: res._id})
+
+            Post.find({autor: res._id})
+            .populate('autor', 'username')
+            .then(res => resolve(res))
+            .catch(error => reject(err("[data error]", error.message, error.statusCode)))
         })
-        .then(res => resolve(res))
         .catch(error => reject(err("[data error]", error.message, error.statusCode)))
     });
 }
