@@ -121,6 +121,7 @@ function listUserPosts(username) {
     return new Promise(function(resolve, reject){
         Model.findOne({ username: username })
         .then(res => {
+            if (res === null) return reject(err("[data error]", "Este username no existe", 403));
             return Post.find({autor: res._id})
         })
         .then(res => resolve(res))
