@@ -14,7 +14,7 @@ function listPosts() {
 
 function getPost(postID) {
     return new Promise(function(resolve, reject){
-        Model.findOne({ _id: postID })
+        Model.find({ _id: postID })
         .populate('autor', 'username')
         .then(res => {
             if (res !== null) {
